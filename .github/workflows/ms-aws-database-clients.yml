@@ -46,7 +46,7 @@ jobs:
         with:
           args: "lambda update-function-code \
             --function-name arn:aws:lambda:us-east-2:508113526099:function:ms-db-clients \
-            --zip-file fileb://ms-aws-database-clients/lambda.zip"
+            --zip-file fileb://ms-aws-database-clients/dist/lambda.zip"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
