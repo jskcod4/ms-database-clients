@@ -1,17 +1,54 @@
-name: Deploy to AWS Lambda
-on: push
+name: Deploy Lambda Function
+
+on:
+  push:
+    branches: [master]
+
 jobs:
-  lambda:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@master
-      - run: echo "THIS IS A TEST PACKAGE" > file.txt
-      - run: npm run build
-      - run: zip lambda.zip dist/handler.js
-      - uses: stcalica/update-lambda
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js v20
+        uses: actions/setup-node@v2
         with:
-          package: lambda.zip
-          function-name: ms-db-clients
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_SECRET_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run all commands
+        run: npm run all && cd dist/ && ls -l
+        working-directory: ms-aws-database-clients
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+
+      - name: Verify lambda.zip creation
+        run: |
+          if [ ! -f ./dist/lambda.zip ]; then
+            echo "lambda.zip not found!"
+            exit 1
+          fi
+
+      - name: Move lambda.zip
+        run: mv dist/lambda.zip . && ls -l
+
+      - name: Verify lambda.zip moved
+        run: |
+          if [ ! -f lambda.zip ]; then
+            echo "lambda.zip not found in root directory!"
+            exit 1
+          fi
+
+      - name: AWS CLI v2
+        uses: imehedi/actions-awscli-v2@latest
+        with:
+          args: "lambda update-function-code \
+            --function-name arn:aws:lambda:us-east-2:508113526099:function:ms-db-clients \
+            --zip-file fileb://ms-aws-database-clients/lambda.zip"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-east-2"
