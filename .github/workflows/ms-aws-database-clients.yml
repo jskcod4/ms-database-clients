@@ -14,14 +14,13 @@ jobs:
       - name: Set up Node.js v20
         uses: actions/setup-node@v2
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install dependencies
         run: npm install
 
       - name: Run all commands
         run: npm run all && cd dist/ && ls -l
-        working-directory: ms-aws-database-clients
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
 
