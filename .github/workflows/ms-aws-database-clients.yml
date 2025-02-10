@@ -1,0 +1,17 @@
+name: Test Run
+on: push
+jobs:
+  lambda:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - run: echo "THIS IS A TEST PACKAGE" > file.txt
+      - run: npm run build
+      - run: zip lambda.zip dist/handler.js
+      - uses: stcalica/update-lambda
+        with:
+          package: lambda.zip
+          function-name: ms-db-clients
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_SECRET_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
